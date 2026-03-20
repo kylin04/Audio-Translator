@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, Act
 import { Audio } from 'expo-av';
 
 // 注意：这是通过 localtunnel 穿透的后端公网地址
-const BACKEND_WS_URL = 'wss://long-doodles-kiss.loca.lt/ws';
+const BACKEND_WS_URL = 'wss://haisnap-translation.loca.lt/ws';
 
 export default function App() {
   const [recording, setRecording] = useState(null);
