@@ -17,7 +17,7 @@
     "android": {
       "package": "com.kylin007.audiotranslator",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/android-icon-foreground.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
       }
     },
