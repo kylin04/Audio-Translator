@@ -10,6 +10,7 @@ export default function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState([]);
   const wsRef = useRef(null);
+  const recordingRef = useRef(null);
 
   useEffect(() => {
     // 建立 WebSocket 连接
@@ -77,10 +78,37 @@ export default function App() {
       });
 
       console.log('开始录音...');
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.LOW_QUALITY
-      );
+      // 配置高频采样，以支持流式传输
+      const { recording } = await Audio.Recording.createAsync({
+        isMeteringEnabled: true,
+        android: {
+          extension: '.m4a',
+          outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_MPEG_4,
+          audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC,
+          sampleRate: 16000,
+          numberOfChannels: 1,
+          bitRate: 128000,
+        },
+        ios: {
+          extension: '.m4a',
+          outputFormat: Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_MPEG4AAC,
+          audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_MAX,
+          sampleRate: 16000,
+          numberOfChannels: 1,
+          bitRate: 128000,
+          linearPCMBitDepth: 16,
+          linearPCMIsBigEndian: false,
+          linearPCMIsFloat: false,
+        },
+      });
+
+      recording.setOnRecordingStatusUpdate((status) => {
+        // 每当有新的录音状态更新时，我们可以考虑在这里获取音频切片发送
+        // 但 expo-av 默认不直接暴露流式 buffer，我们需要用定时器读取文件
+      });
+
       setRecording(recording);
+      recordingRef.current = recording;
       console.log('录音中...');
     } catch (err) {
       console.error('无法启动录音', err);
@@ -89,21 +117,34 @@ export default function App() {
 
   async function stopRecording() {
     console.log('停止录音...');
-    if (!recording) return;
+    if (!recordingRef.current) return;
     try {
-      setRecording(undefined);
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
+      await recordingRef.current.stopAndUnloadAsync();
+      const uri = recordingRef.current.getURI();
       console.log('录音文件保存在:', uri);
       
-      // 注意：目前的版本是演示UI用的。
-      // 真正的同声传译需要把这里的音频文件转成 base64 或 buffer 通过 WebSocket 发给后端。
-      // 这里为了演示，我们伪造一条发给后端的请求：
-      if (wsRef.current && isConnected) {
-         wsRef.current.send(JSON.stringify({
-            type: "audio_chunk",
-            data: "base64_encoded_audio_data_here" 
-         }));
+      setRecording(null);
+      recordingRef.current = null;
+      
+      // 读取音频文件并转成 base64 发送给后端
+      try {
+        // 在 React Native 中，可以通过 fetch 将本地文件转为 blob，再用 FileReader 转 base64
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64data = reader.result.split(',')[1];
+          if (wsRef.current && isConnected) {
+             wsRef.current.send(JSON.stringify({
+                type: "audio",
+                data: base64data
+             }));
+             console.log("音频数据已发送给后端");
+          }
+        };
+        reader.readAsDataURL(blob);
+      } catch (e) {
+        console.error("读取音频文件失败:", e);
       }
 
     } catch (err) {

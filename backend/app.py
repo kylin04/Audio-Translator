@@ -157,7 +157,16 @@ async def websocket_endpoint(websocket: WebSocket):
                         try:
                             message = json.loads(data['text'])
                             
-                            if message.get('type') == 'end':
+                            if message.get('type') == 'audio':
+                                import base64
+                                audio_bytes = base64.b64decode(message["data"])
+                                logger.info(f"[{session_id}] 收到音频数据: {len(audio_bytes)} bytes")
+                                await websocket.send_json({
+                                    "type": "result",
+                                    "text": "这是一段来自模拟模式的测试语音识别结果。",
+                                    "translation": "This is a mock translation result from the simulated mode."
+                                })
+                            elif message.get('type') == 'end':
                                 logger.info(f'[{session_id}] 收到结束信号')
                                 break
                             elif message.get('type') == 'ping':
