@@ -1,0 +1,34 @@
+{
+  "type": "module",
+  "name": "real-time-translation-191138-frontend-react",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@fortawesome/fontawesome-svg-core": "latest",
+    "@fortawesome/free-solid-svg-icons": "latest",
+    "@fortawesome/free-brands-svg-icons": "latest",
+    "@fortawesome/react-fontawesome": "latest",
+    "@fortawesome/fontawesome-free": "latest",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "react-redux": "^8.1.3",
+    "react-router-dom": "^6.22.3",
+    "socket.io-client": "^4.7.5",
+    "axios": "^1.6.2",
+    "uuid": "latest",
+    "react-icons": "latest",
+    "react-dropzone": "latest"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-react-jsx": "latest",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@babel/preset-react": "latest",
+    "zustand": "^5",
+    "vite": "^5.4.0"
+  }
+}
